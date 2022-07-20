@@ -124,6 +124,8 @@ private:
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelLocalTrack>> pixelLocalTrackToken_;
   edm::EDGetTokenT<edm::DetSetVector<CTPPSPixelRecHit>> pixelRecHitToken_;
   edm::ESGetToken<CTPPSGeometry, VeryForwardRealGeometryRecord> geomEsToken_;
+  std::string lhcInfoLabel_;  
+  edm::ESGetToken<LHCInfo, LHCInfoRcd> lhcInfoToken_;
 
   bool isCorrelationPlotEnabled;
   bool supplementaryPlots;
@@ -291,7 +293,11 @@ private:
 };
 
 EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterSet &iConfig)
-    : geomEsToken_(esConsumes<edm::Transition::BeginRun>()) {
+    : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
+      // lhcInfoLabel_(iConfig.getParameter<std::string>("")), //TOOD doesn't work with lhcInfoLabel value
+      // lhcInfoToken_(esConsumes<LHCInfo, LHCInfoRcd>(edm::ESInputTag("", lhcInfoLabel_))),
+      lhcInfoToken_(esConsumes<edm::Transition::BeginRun>())
+  {
   producerTag = iConfig.getUntrackedParameter<std::string>("producerTag");
 
   pixelLocalTrackToken_ =
@@ -891,12 +897,10 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
     return;
   h1BunchCrossing_->Fill(iEvent.eventAuxiliary().bunchCrossing(), weight);
 
-  edm::ESHandle<LHCInfo> pSetup;
-  const std::string label = "";
-  iSetup.get<LHCInfoRcd>().get(label, pSetup);
+  auto const& dataLHCInfo = iSetup.getData(lhcInfoToken_);
 
   // re-initialise algorithm upon crossing-angle change
-  const LHCInfo *pInfo = pSetup.product();
+  const LHCInfo *pInfo = &dataLHCInfo; //TODO: change code to use reference isntead of pointer
   h1CrossingAngle_->Fill(pInfo->crossingAngle(), weight);
 
   for (const auto &rpPixeltrack : *pixelLocalTracks) {
@@ -1053,10 +1057,10 @@ void EfficiencyTool_2018DQMWorker::analyze(const edm::Event &iEvent, const edm::
   Handle<reco::ForwardProtonCollection> multiRP_protons;
   iEvent.getByToken(multiRP_protonsToken_, multiRP_protons);
 
-  edm::ESHandle<LHCInfo> lhcInfo;
-  iSetup.get<LHCInfoRcd>().get("", lhcInfo);
-  const LHCInfo *pLhcInfo = lhcInfo.product();
-  double xangle = pLhcInfo->crossingAngle();
+  // edm::ESHandle<LHCInfo> lhcInfo;
+  // iSetup.get<LHCInfoRcd>().get("", lhcInfo);
+  // const LHCInfo *pLhcInfo = lhcInfo.product();
+  double xangle = pInfo->crossingAngle(); //TODO: fetch new data instead using this already fetched
 
   trackMux_.clear();
   for (auto &proton_Tag : *protons) {
@@ -1342,6 +1346,7 @@ void EfficiencyTool_2018DQMWorker::fillDescriptions(edm::ConfigurationDescriptio
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
+  desc.add<std::string>("lhcInfoLabel", "")->setComment("label of the LHCInfo record");
 }
 
 // This function produces all the possible plane combinations extracting
