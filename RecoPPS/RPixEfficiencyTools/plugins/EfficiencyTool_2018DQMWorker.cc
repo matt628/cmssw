@@ -294,9 +294,9 @@ private:
 
 EfficiencyTool_2018DQMWorker::EfficiencyTool_2018DQMWorker(const edm::ParameterSet &iConfig)
     : geomEsToken_(esConsumes<edm::Transition::BeginRun>()),
-      // lhcInfoLabel_(iConfig.getParameter<std::string>("")), //TOOD doesn't work with lhcInfoLabel value
-      // lhcInfoToken_(esConsumes<LHCInfo, LHCInfoRcd>(edm::ESInputTag("", lhcInfoLabel_))),
-      lhcInfoToken_(esConsumes<edm::Transition::BeginRun>())
+      lhcInfoLabel_(iConfig.getParameter<std::string>("")), //TOOD doesn't work with lhcInfoLabel value
+      lhcInfoToken_(esConsumes<LHCInfo, LHCInfoRcd>(edm::ESInputTag("", lhcInfoLabel_)))
+      // lhcInfoToken_(esConsumes<edm::Transition::BeginRun>())
   {
   producerTag = iConfig.getUntrackedParameter<std::string>("producerTag");
 
