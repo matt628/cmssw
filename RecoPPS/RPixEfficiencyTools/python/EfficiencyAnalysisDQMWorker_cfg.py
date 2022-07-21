@@ -145,6 +145,7 @@ if options.useJsonFile == True:
 #     injectionSchemeFileName = ''
 injectionSchemeFileName = ''
 runNumber=options.runNumber
+print("Run number: ", runNumber)
 if runNumber < str(firstRunOfTheYear):
     print("This run belongs to before 2018 data taking")
 elif runNumber <= lastRunPreTs1:
@@ -234,7 +235,7 @@ process.worker = DQMEDAnalyzer('EfficiencyTool_2018DQMWorker',
     fiducialXLow=cms.untracked.vdouble(fiducialXLow),
     fiducialYLow=cms.untracked.vdouble(fiducialYLow),
     fiducialYHigh=cms.untracked.vdouble(fiducialYHigh),
-    producerTag=cms.untracked.string(""),
+    producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
     detectorTiltAngle=cms.untracked.double(18.4),
     detectorRotationAngle=cms.untracked.double(-8),
 
