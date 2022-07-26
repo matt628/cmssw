@@ -6,15 +6,11 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 
 #GLOBAL CONSTANT VARIABLES
+# fiducial variables restricts the area to analyze 
+# - the current setup covers the whole possible area
 fiducialXLow = [0,0,0,0]
 fiducialYLow = [-99.,-99.,-99.,-99.]
 fiducialYHigh = [99.,99.,99.,99.]
-
-firstRunOfTheYear = 314247
-lastRunPreTs1     = 317696
-lastRunPreTs2     = 322633
-lastRunOfTheYear  = 324897
-
 
 #SETUP PROCESS
 process = cms.Process("DQMWorkerProcess", eras.Run2_2018,eras.run2_miniAOD_devel)
@@ -144,31 +140,6 @@ if options.useJsonFile == True:
 # else:
 #     injectionSchemeFileName = ''
 injectionSchemeFileName = ''
-runNumber=options.runNumber
-if runNumber < str(firstRunOfTheYear):
-    print("This run belongs to before 2018 data taking")
-elif runNumber <= lastRunPreTs1:
-    print("Analyzing Pre-TS1 data")
-elif runNumber <= lastRunPreTs2:
-    print("Analyzing data taken between TS1 and TS2")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 0.5
-            fiducialYHigh[i] -= 0.5
-        else:
-            fiducialYLow[i] += 0.5
-            fiducialYHigh[i] += 0.5
-elif runNumber <= lastRunOfTheYear:
-    print("Analyzing Post-TS2 data")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 1
-            fiducialYHigh[i] -= 1
-        else:
-            fiducialYLow[i] += 1
-            fiducialYHigh[i] += 1
-elif runNumber > lastRunOfTheYear:
-    print("This run doesn't belong to 2018 data taking")
 
 
 #LOAD NECCESSARY DEPENDENCIES
@@ -234,7 +205,7 @@ process.worker = DQMEDAnalyzer('EfficiencyTool_2018DQMWorker',
     fiducialXLow=cms.untracked.vdouble(fiducialXLow),
     fiducialYLow=cms.untracked.vdouble(fiducialYLow),
     fiducialYHigh=cms.untracked.vdouble(fiducialYHigh),
-    producerTag=cms.untracked.string(""),
+    producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
     detectorTiltAngle=cms.untracked.double(18.4),
     detectorRotationAngle=cms.untracked.double(-8),
 

@@ -1,7 +1,17 @@
 import FWCore.ParameterSet.Config as cms
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
+from Configuration.AlCa.GlobalTag import GlobalTag
 import FWCore.ParameterSet.VarParsing as VarParsing
 
+#GLOBAL CONSTANT VARIABLES
+# fiducial variables restricts the area to analyze 
+# - the current setup covers the whole possible area 
+fiducialXLow = [0,0,0,0]
+fiducialXHigh = [99,99,99,99]
+fiducialYLow = [-99.,-99.,-99.,-99.]
+fiducialYHigh = [99.,99.,99.,99.]
+
+#SETUP PROCESS
 process = cms.Process("Demo")
 
 process.options = cms.untracked.PSet(
@@ -47,6 +57,7 @@ inputFiles = cms.untracked.vstring( *fileList)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("DQM.Integration.config.environment_cfi")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load("Geometry.VeryForwardGeometry.geometryRPFromDD_2018_cfi")
 
 process.MessageLogger = cms.Service("MessageLogger",
@@ -72,7 +83,7 @@ process.MessageLogger = cms.Service("MessageLogger",
         ),
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) ) 
 
 if options.useJsonFile == True:
     print("Using JSON file...")
@@ -83,55 +94,12 @@ if options.useJsonFile == True:
         jsonFileName = options.jsonFileName
     print(jsonFileName)
     process.source.lumisToProcess = LumiList.LumiList(filename = jsonFileName).getVLuminosityBlockRange()
-# Fiducial region for tracks
-# RP order 0_0, 0_2, 1_0, 1_2 at the top left angle of the RP track map (for tilted pots)
-# cuts
-# fiducialXLow = [2.85,2.28,3.28,2.42]
-# fiducialYLow = [-11.5,-10.9,-11.6,-10.3]
-# fiducialYHigh = [3.8,4.4,3.7,5.2]
 
-# no cuts
-fiducialXLow = [0,0,0,0]
-fiducialXHigh = [99,99,99,99]
-fiducialYLow = [-99.,-99.,-99.,-99.]
-fiducialYHigh = [99.,99.,99.,99.]
-
-
-firstRunOfTheYear = 314247
-lastRunPreTs1     = 317696
-lastRunPreTs2     = 322633
-lastRunOfTheYear  = 324897
 
 runNumber=options.runNumber
 
-
-if runNumber < firstRunOfTheYear:
-    print("This run belongs to before 2018 data taking")
-elif runNumber <= lastRunPreTs1:
-    print("Analyzing Pre-TS1 data")
-elif runNumber <= lastRunPreTs2:
-    print("Analyzing data taken between TS1 and TS2")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 0.5
-            fiducialYHigh[i] -= 0.5
-        else:
-            fiducialYLow[i] += 0.5
-            fiducialYHigh[i] += 0.5
-elif runNumber <= lastRunOfTheYear:
-    print("Analyzing Post-TS2 data")
-    for i in range(4):
-        if (i == 1 or i == 3):
-            fiducialYLow[i] -= 1
-            fiducialYHigh[i] -= 1
-        else:
-            fiducialYLow[i] += 1
-            fiducialYHigh[i] += 1
-elif runNumber > lastRunOfTheYear:
-    print("This run doesn't belong to 2018 data taking")
-
 #SETUP GLOBAL TAG
-#process.GlobalTag = GlobalTag(process.GlobalTag, '113X_dataRun2_v6')
+process.GlobalTag = GlobalTag(process.GlobalTag, '123X_dataRun2_v4')
 
 
 #SETUP INPUT
@@ -157,7 +125,7 @@ process.worker = DQMEDAnalyzer('ReferenceAnalysisDQMWorker',
     fiducialXHigh=cms.untracked.vdouble(fiducialXHigh),
     fiducialYLow=cms.untracked.vdouble(fiducialYLow),
     fiducialYHigh=cms.untracked.vdouble(fiducialYHigh),
-    producerTag=cms.untracked.string("ReMiniAOD"),
+    producerTag=cms.untracked.string("CTPPSTestProtonReconstruction"),
     detectorTiltAngle=cms.untracked.double(18.4),
     detectorRotationAngle=cms.untracked.double(-8),
     useMultiRPEfficiency=cms.untracked.bool(False),
